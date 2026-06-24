@@ -1,0 +1,158 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+const int MAX = 11;
+
+// Mảng lưu tên các tỉnh thành
+const string TenTinh[MAX] = {
+    "Ha Noi",       // 0
+    "Hai Duong",    // 1
+    "Hung Yen",     // 2
+    "Phu Ly",       // 3
+    "Hoa Binh",     // 4
+    "Son Tay",      // 5
+    "Thai Nguyen",  // 6
+    "Bac Ninh",     // 7
+    "Bac Giang",    // 8
+    "Uong Bi",      // 9
+    "Hai Phong"     // 10
+};
+// Sử dụng Vector để làm Danh sách kề (Adjacency List) - Tối ưu hơn ma trận kề
+vector<int> adj[MAX];
+bool visited[MAX];
+int parent[MAX];
+// Hàm thêm cạnh vô hướng
+void ThemCanh(int u, int v) {
+    adj[u].push_back(v);
+    adj[v].push_back(u);
+}
+// Hàm khởi tạo dữ liệu đồ thị
+void KhoiTaoDoThi() {
+    ThemCanh(0, 1);   // Ha Noi - Hai Duong
+    ThemCanh(1, 2);   // Hai Duong - Hung Yen
+    ThemCanh(2, 3);   // Hung Yen - Phu Ly
+    ThemCanh(3, 0);   // Phu Ly - Ha Noi
+
+    ThemCanh(0, 4);   // Ha Noi - Hoa Binh
+    ThemCanh(0, 5);   // Ha Noi - Son Tay
+    ThemCanh(0, 6);   // Ha Noi - Thai Nguyen
+
+    ThemCanh(0, 7);   // Ha Noi - Bac Ninh
+    ThemCanh(7, 8);   // Bac Ninh - Bac Giang
+    ThemCanh(8, 9);   // Bac Giang - Uong Bi
+
+    ThemCanh(7, 9);   // Bac Ninh - Uong Bi
+    ThemCanh(9, 10);  // Uong Bi - Hai Phong
+    ThemCanh(1, 10);  // Hai Duong - Hai Phong
+}
+// Reset lại trạng thái các mảng bổ trợ trước khi chạy thuật toán
+void ResetTrangThai() {
+    for (int i = 0; i < MAX; i++) {
+        visited[i] = false;
+        parent[i] = -1;
+    }
+}
+// Thuật toán DFS (Tìm kiếm theo chiều sâu) - Có lưu vết đường đi
+bool DFS(int u, int t) {
+    visited[u] = true;
+    if (u == t) return true;
+
+    // Chỉ duyệt qua các đỉnh kề thực sự của u
+    for (int v : adj[u]) {
+        if (!visited[v]) {
+            parent[v] = u; // Lưu vết đường đi
+            if (DFS(v, t)) return true;
+        }
+    }
+    return false;
+}
+
+// Thuật toán BFS (Tìm kiếm theo chiều rộng) - Tìm đường đi ngắn nhất
+bool BFS(int s, int t) {
+    queue<int> q;
+    
+    visited[s] = true;
+    q.push(s);
+
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+
+        if (u == t) return true;
+
+        for (int v : adj[u]) {
+            if (!visited[v]) {
+                visited[v] = true;
+                parent[v] = u; // Lưu vết đường đi
+                q.push(v);
+            }
+        }
+    }
+    return false;
+}
+
+// Hàm in lộ trình từ mảng parent
+void InDuongDi(int s, int t) {
+    if (!visited[t]) {
+        cout << "Khong ton tai duong di tu " << TenTinh[s] << " den " << TenTinh[t] << "!\n";
+        return;
+    }
+
+    vector<int> path;
+    int cur = t;
+    while (cur != -1) {
+        path.push_back(cur);
+        cur = parent[cur];
+    }
+    reverse(path.begin(), path.end()); // Đảo ngược vector để chạy từ nguồn đến đích
+
+    for (size_t i = 0; i < path.size(); i++) {
+        cout << TenTinh[path[i]];
+        if (i < path.size() - 1) cout << " -> ";
+    }
+    cout << "\nSo canh di qua (So chặng): " << path.size() - 1 << endl;
+}
+
+// Hàm in danh sách các tỉnh để người dùng tiện theo dõi
+void InDanhSachTinh() {
+    cout << "================ DANH SACH CAC TINH ================\n";
+    for (int i = 0; i < MAX; i++) {
+        cout << i << ". " << TenTinh[i] << endl;
+    }
+    cout << "====================================================\n\n";
+}
+
+int main() {
+    KhoiTaoDoThi();
+    InDanhSachTinh();
+
+    int start = 0;   // Ha Noi
+    int finish = 10; // Hai Phong
+
+    cout << "Khao sat duong di tu [" << TenTinh[start] << "] den [" << TenTinh[finish] << "]:\n";
+
+    // 1. Thực hiện bằng DFS
+    ResetTrangThai();
+    cout << "\n--- KET QUA DUYET BANG DFS (Chưa chắc ngắn nhất) ---" << endl;
+    if (DFS(start, finish)) {
+        InDuongDi(start, finish);
+    } else {
+        cout << "Khong tim thay duong di!\n";
+    }
+
+    // 2. Thực hiện bằng BFS
+    ResetTrangThai();
+    cout << "\n--- KET QUA DUYET BANG BFS (Đường đi ngắn nhất) ---" << endl;
+    if (BFS(start, finish)) {
+        InDuongDi(start, finish);
+    } else {
+        cout << "Khong tim thay duong di!\n";
+    }
+
+    return 0;
+}
