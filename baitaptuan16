@@ -8,20 +8,7 @@ using namespace std;
 
 const int MAX = 11;
 
-// Mảng lưu tên các tỉnh thành
-const string TenTinh[MAX] = {
-    "Ha Noi",       // 0
-    "Hai Duong",    // 1
-    "Hung Yen",     // 2
-    "Phu Ly",       // 3
-    "Hoa Binh",     // 4
-    "Son Tay",      // 5
-    "Thai Nguyen",  // 6
-    "Bac Ninh",     // 7
-    "Bac Giang",    // 8
-    "Uong Bi",      // 9
-    "Hai Phong"     // 10
-};
+
 // Sử dụng Vector để làm Danh sách kề (Adjacency List) - Tối ưu hơn ma trận kề
 vector<int> adj[MAX];
 bool visited[MAX];
